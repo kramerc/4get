@@ -90,8 +90,7 @@ class config{
 	// eachother your serber should appear everywhere.
 	const INSTANCES = [
 		"https://4get.ca",
-		"https://4get.zzls.xyz",
-		"https://4getus.zzls.xyz",
+		"https://4get.nadeko.net",
 		"https://4get.silly.computer",
 		"https://4get.konakona.moe",
 		"https://4get.lvkaszus.pl",
