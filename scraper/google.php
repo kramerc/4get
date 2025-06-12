@@ -975,6 +975,7 @@ class google{
 		];
 		
 		$this->fuckhtml->load($html);
+		$this->detect_sorry();
 		
 		$this->parsestyles();
 		
