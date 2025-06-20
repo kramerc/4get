@@ -3,7 +3,10 @@
 class marginalia{
 	public function __construct(){
 		
-		include "lib/fuckhtml.php";
+		include "lib/anubis.php";
+		$this->anubis = new anubis();
+		
+		include_once "lib/fuckhtml.php";
 		$this->fuckhtml = new fuckhtml();
 		
 		include "lib/backend.php";
@@ -102,7 +105,40 @@ class marginalia{
 		);
 	}
 	
-	private function get($proxy, $url, $get = []){
+	private function get($proxy, $url, $get = [], $get_cookies = 1){
+		
+		$curlproc = curl_init();
+		
+		switch($get_cookies){
+			
+			case 0:
+				$cookies = "";
+				$cookies_tmp = [];
+				curl_setopt($curlproc, CURLOPT_HEADERFUNCTION, function($curlproc, $header) use (&$cookies_tmp){
+					
+					$length = strlen($header);
+					
+					$header = explode(":", $header, 2);
+					
+					if(trim(strtolower($header[0])) == "set-cookie"){
+						
+						$cookie_tmp = explode("=", trim($header[1]), 2);
+						
+						$cookies_tmp[trim($cookie_tmp[0])] =
+							explode(";", $cookie_tmp[1], 2)[0];
+					}
+					
+					return $length;
+				});
+				break;
+			
+			case 1:
+				$cookies = "";
+				break;
+			
+			default:
+				$cookies = "Cookie: " . $get_cookies;
+		}
 		
 		$headers = [
 			"User-Agent: " . config::USER_AGENT,
@@ -110,6 +146,7 @@ class marginalia{
 			"Accept-Language: en-US,en;q=0.5",
 			"Accept-Encoding: gzip",
 			"DNT: 1",
+			$cookies,
 			"Connection: keep-alive",
 			"Upgrade-Insecure-Requests: 1",
 			"Sec-Fetch-Dest: document",
@@ -117,8 +154,6 @@ class marginalia{
 			"Sec-Fetch-Site: none",
 			"Sec-Fetch-User: ?1"
 		];
-		
-		$curlproc = curl_init();
 		
 		if($get !== []){
 			$get = http_build_query($get);
@@ -145,7 +180,19 @@ class marginalia{
 			throw new Exception(curl_error($curlproc));
 		}
 		
-		curl_close($curlproc);
+		if($get_cookies === 0){
+			
+			$cookie = [];
+			
+			foreach($cookies_tmp as $key => $value){
+				
+				$cookie[] = $key . "=" . $value;
+			}
+			
+			curl_close($curlproc);
+			return implode(";", $cookie);
+		}
+		
 		return $data;
 	}
 	
@@ -267,6 +314,55 @@ class marginalia{
 		// HTML parser
 		$proxy = $this->backend->get_ip();
 		
+		//
+		// Bypass anubis check
+		//
+		if(($anubis_key = apcu_fetch("marginalia_cookie")) === false){
+			
+			try{
+				$html =
+					$this->get(
+						$proxy,
+						"https://old-search.marginalia.nu/"
+					);
+			}catch(Exception $error){
+				
+				throw new Exception("Failed to get anubis challenge");
+			}
+			
+			try{
+				
+				$anubis_data = $this->anubis->scrape($html);
+			}catch(Exception $error){
+				
+				throw new Exception($error);
+			}
+			
+			// send anubis response & get cookies
+			// https://old-search.marginalia.nu/.within.website/x/cmd/anubis/api/pass-challenge?response=0000018966b086834f738bacba6031028adb5aa875974ead197a8b75778baf3a&nonce=39947&redir=https%3A%2F%2Fold-search.marginalia.nu%2F&elapsedTime=1164
+			
+			try{
+				
+				$anubis_key =
+					$this->get(
+						$proxy,
+						"https://old-search.marginalia.nu/.within.website/x/cmd/anubis/api/pass-challenge",
+						[
+							"response" => $anubis_data["response"],
+							"nonce" => $anubis_data["nonce"],
+							"redir" => "https://old-search.marginalia.nu/",
+							"elapsedTime" => random_int(1000, 2000)
+						],
+						0
+					);
+			}catch(Exception $error){
+				
+				throw new Exception("Failed to submit anubis challenge");
+			}
+			
+			apcu_store("marginalia_cookie", $anubis_key);
+		}
+		
 		if($get["npt"]){
 			
 			[$params, $proxy] =
@@ -279,7 +375,9 @@ class marginalia{
 				$html =
 					$this->get(
 						$proxy,
-						"https://old-search.marginalia.nu/search?" . $params
+						"https://old-search.marginalia.nu/search?" . $params,
+						[],
+						$anubis_key
 					);
 			}catch(Exception $error){
 				
@@ -309,7 +407,8 @@ class marginalia{
 					$this->get(
 						$proxy,
 						"https://old-search.marginalia.nu/search",
-						$params
+						$params,
+						$anubis_key
 					);
 			}catch(Exception $error){
 				
