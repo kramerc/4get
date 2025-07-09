@@ -718,7 +718,7 @@ class ddg{
 						->getTextContent(
 							$json["suggestion"]
 						),
-					"correction" => $json["recourseText"]
+					"correction" => html_entity_decode($json["recourseText"])
 				];
 			}
 		}
