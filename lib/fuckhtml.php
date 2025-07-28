@@ -240,12 +240,13 @@ class fuckhtml{
 	public function getElementsByFuzzyAttributeValue(string $name, string $value, $collection = null){
 		
 		$elems = $this->getElementsByAttributeName($name, $collection);
+		
 		$value =
 			explode(
 				" ",
 				trim(
 					preg_replace(
-						'/ +/',
+						'/\s+/',
 						" ",
 						$value
 					)
@@ -258,7 +259,18 @@ class fuckhtml{
 			
 			foreach($elem["attributes"] as $attrib_name => $attrib_value){
 				
-				$attrib_value = explode(" ", $attrib_value);
+				$attrib_value =
+					explode(
+						" ",
+						trim(
+							preg_replace(
+								'/\s+/',
+								" ",
+								$attrib_value
+							)
+						)
+					);
+				
 				$ac = count($attrib_value);
 				$nc = count($value);
 				$cr = 0;

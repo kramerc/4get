@@ -949,6 +949,7 @@ class frontend{
 						"crowdview" => "Crowdview",
 						"mwmbl" => "Mwmbl",
 						"mojeek" => "Mojeek",
+						"baidu" => "Baidu",
 						"solofield" => "Solofield",
 						"marginalia" => "Marginalia",
 						"wiby" => "wiby",
@@ -969,6 +970,7 @@ class frontend{
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
 						"yep" => "Yep",
+						"baidu" => "Baidu",
 						"solofield" => "Solofield",
 						"pinterest" => "Pinterest",
 						"flickr" => "Flickr",
@@ -993,6 +995,7 @@ class frontend{
 						"google" => "Google",
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
+						"baidu" => "Baidu",
 						"solofield" => "Solofield"
 					]
 				];
@@ -1008,7 +1011,8 @@ class frontend{
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
 						"yep" => "Yep",
-						"mojeek" => "Mojeek"
+						"mojeek" => "Mojeek",
+						"baidu" => "Baidu"
 					]
 				];
 				break;
