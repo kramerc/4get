@@ -134,6 +134,7 @@ class config{
 	const PROXY_STARTPAGE = false;
 	const PROXY_QWANT = false;
 	const PROXY_BAIDU = false;
+	const PROXY_COCCOC = false;
 	const PROXY_GHOSTERY = false;
 	const PROXY_MARGINALIA = false;
 	const PROXY_MOJEEK = false;
