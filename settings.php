@@ -174,8 +174,8 @@ $settings = [
 						"text" => "Baidu"
 					],
 					[
-						"value" => "solofield",
-						"text" => "Solofield"
+						"value" => "coccoc",
+						"text" => "Cốc Cốc"
 					],
 					[
 						"value" => "marginalia",
@@ -230,10 +230,6 @@ $settings = [
 					[
 						"value" => "baidu",
 						"text" => "Baidu"
-					],
-					[
-						"value" => "solofield",
-						"text" => "Solofield"
 					],
 					[
 						"value" => "pinterest",
@@ -298,8 +294,8 @@ $settings = [
 						"text" => "Baidu"
 					],
 					[
-						"value" => "solofield",
-						"text" => "Solofield"
+						"value" => "coccoc",
+						"text" => "Cốc Cốc"
 					]
 				]
 			],
