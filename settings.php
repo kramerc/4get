@@ -266,6 +266,10 @@ $settings = [
 						"text" => "YouTube"
 					],
 					[
+						"value" => "sepiasearch",
+						"text" => "Sepia Search"
+					],
+					[
 						"value" => "ddg",
 						"text" => "DuckDuckGo"
 					],
