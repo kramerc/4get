@@ -100,7 +100,6 @@ class config{
 		"https://4get.sijh.net",
 		"https://4get.hbubli.cc",
 		"https://4get.plunked.party",
-		"https://4get.seitan-ayoub.lol",
 		"https://4get.etenie.pl",
 		"https://4get.lunar.icu",
 		"https://4get.dcs0.hu",
@@ -144,6 +143,7 @@ class config{
 	const PROXY_WIBY = false;
 	const PROXY_CURLIE = false;
 	const PROXY_YT = false; // youtube
+	const PROXY_SEPIASEARCH = false;
 	const PROXY_YEP = false;
 	const PROXY_PINTEREST = false;
 	const PROXY_SANKAKUCOMPLEX = false;
