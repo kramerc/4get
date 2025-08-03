@@ -501,11 +501,6 @@ class mojeek{
 				
 				throw new Exception("Failed to get HTML");
 			}
-			/*
-			$handle = fopen("scraper/mojeek.html", "r");
-			$html = fread($handle, filesize("scraper/mojeek.html"));
-			fclose($handle);*/
-			
 		}
 		
 		$out = [
@@ -525,6 +520,8 @@ class mojeek{
 		];
 		
 		$this->fuckhtml->load($html);
+		
+		$this->detect_block();
 		
 		$results =
 			$this->fuckhtml
@@ -1034,6 +1031,8 @@ class mojeek{
 		
 		$this->fuckhtml->load($html);
 		
+		$this->detect_block();
+		
 		$articles =
 			$this->fuckhtml->getElementsByTagName("article");
 		
@@ -1164,6 +1163,26 @@ class mojeek{
 		}
 		
 		return $out;
+	}
+	
+	private function detect_block(){
+		
+		$title =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"title"
+			);
+		
+		if(
+			count($title) !== 0 &&
+			$this->fuckhtml
+			->getTextContent(
+				$title[0]["innerHTML"]
+			) == "403 - Forbidden"
+		){
+			
+			throw new Exception("Mojeek blocked this instance or request proxy.");
+		}
 	}
 	
 	private function titledots($title){
