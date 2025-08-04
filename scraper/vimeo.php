@@ -667,14 +667,19 @@ class vimeo{
 			$jwt = $jwt["jwt"];
 			*/
 			
-			$json =
-				$this->get(
-					$proxy,
-					"https://vimeo.com/_next/jwt",
-					[],
-					false
-				);
-			
+			try{
+				$json =
+					$this->get(
+						$proxy,
+						"https://vimeo.com/_next/jwt",
+						[],
+						false
+					);
+			}catch(Exception $error){
+				
+				throw new Exception("Failed to fetch JWT token");
+			}
+				
 			$json = json_decode($json, true);
 			
 			if($json === null){
