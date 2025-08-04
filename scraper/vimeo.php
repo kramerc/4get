@@ -679,6 +679,25 @@ class vimeo{
 				
 				throw new Exception("Failed to fetch JWT token");
 			}
+			
+			$this->fuckhtml->load($html);
+			
+			$captcha =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"title"
+				);
+			
+			if(
+				count($captcha) !== 0 &&
+				$this->fuckhtml
+				->getTextContent(
+					$captcha[0]
+				) == "Vimeo / CAPTCHA Challenge"
+			){
+				
+				throw new Exception("Vimeo returned a Captcha");
+			}
 				
 			$json = json_decode($json, true);
 			
