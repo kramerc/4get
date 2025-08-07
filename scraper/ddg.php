@@ -1053,8 +1053,6 @@ class ddg{
 						];
 				}
 				
-				var_dump($json);
-				
 				$out["answer"][] = [
 					"title" => $json["Heading"],
 					"description" => $description,
