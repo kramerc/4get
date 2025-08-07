@@ -525,6 +525,15 @@ class ddg{
 			
 			if(isset($item["c"])){
 				
+				if(
+					!isset($item["s"]) &&
+					isset($item["t"]) &&
+					$item["t"] == "DEEP_ERROR_NO_RESULTS"
+				){
+					
+					return $out;
+				}
+				
 				$table = [];
 				
 				// get youtube video information
