@@ -974,6 +974,7 @@ class frontend{
 						"baidu" => "Baidu",
 						//"solofield" => "Solofield",
 						"pinterest" => "Pinterest",
+						"cara" => "Cara",
 						"flickr" => "Flickr",
 						"fivehpx" => "500px",
 						"vsco" => "VSCO",
@@ -990,6 +991,7 @@ class frontend{
 					"option" => [
 						"yt" => "YouTube",
 						"vimeo" => "Vimeo",
+						//"odysee" => "Odysee",
 						"sepiasearch" => "Sepia Search",
 						//"fb" => "Facebook videos",
 						"ddg" => "DuckDuckGo",
