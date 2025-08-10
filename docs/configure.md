@@ -19,6 +19,8 @@ To come up with this set of instructions, I used [this guide](https://github.com
 
 First, compile curl-impersonate (the firefox flavor).
 ```sh
+git clone https://github.com/lwthiker/curl-impersonate/
+cd curl-impersonate
 sudo apt install build-essential pkg-config cmake ninja-build curl autoconf automake libtool python3-pip libnss3
 mkdir build
 cd build
