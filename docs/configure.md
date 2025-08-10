@@ -9,16 +9,26 @@ Welcome! This guide assumes that you have a working 4get instance. This will hel
 4. The captcha font is located in `data/fonts/captcha.ttf`
 
 # Cloudflare bypass (TLS check)
-**Note: this only allows you to bypass the browser integrity checks. Captchas & javascript challenges will not be bypassed.**
+>These instructions have been updated to work with Debian 13 Trixie.
 
-Configuring this lets you fetch images sitting behind Cloudflare and allows you to scrape the **Yep** & the **Mwmbl** search engines. Please be aware that APT will fight against you and will re-install the openSSL-version of curl constantly when updating.
+**Note: this only allows you to bypass the browser integrity checks. Captchas & javascript challenges will not be bypassed by this program!**
 
-First, follow these instructions. Only install the Firefox modules:
+Configuring this lets you fetch images sitting behind Cloudflare and allows you to scrape the **Yep** search engine.
 
-https://github.com/lwthiker/curl-impersonate/blob/main/INSTALL.md#native-build
+To come up with this set of instructions, I used [this guide](https://github.com/lwthiker/curl-impersonate/blob/main/INSTALL.md#native-build) as a reference, but trust me you probably want to stick to what's written on this page.
+
+First, compile curl-impersonate (the firefox flavor).
+```sh
+sudo apt install build-essential pkg-config cmake ninja-build curl autoconf automake libtool python3-pip libnss3
+mkdir build
+cd build
+../configure
+make firefox-build
+sudo make firefox-install
+sudo ldconfig
+```
 
 Once you did this, you should be able to run the following inside your terminal:
-
 ```sh
 $ curl_ff117 --version
 curl 8.1.1 (x86_64-pc-linux-gnu) libcurl/8.1.1 NSS/3.92 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 nghttp2/1.56.0
@@ -26,17 +36,32 @@ Release-Date: 2023-05-23
 Protocols: dict file ftp ftps gopher gophers http https imap imaps mqtt pop3 pop3s rtsp smb smbs smtp smtps telnet tftp ws wss
 Features: alt-svc AsynchDNS brotli HSTS HTTP2 HTTPS-proxy IDN IPv6 Largefile libz NTLM NTLM_WB SSL threadsafe UnixSockets zstd
 ```
-Now, after compiling, you should have a `libcurl-impersonate-ff.so` sitting somewhere. Mine (on my debian install) is located at `/usr/local/lib/libcurl-impersonate-ff.so`.
 
-Find the `libcurl.so.4` file used by your current installation of curl. For me, this file is located at `/usr/lib/x86_64-linux-gnu/libcurl.so.4`
+Now, after compiling, you should have a `libcurl-impersonate-ff.so` sitting somewhere. Mine is located at `/usr/local/lib/libcurl-impersonate-ff.so`. Do some patch fuckery:
 
-Now comes the sketchy part: replace `libcurl.so.4` with `libcurl-impersonate-ff.so`. You can do this in the following way:
 ```sh
-sudo rm /usr/lib/x86_64-linux-gnu/libcurl.so.4
-sudo cp /usr/local/lib/libcurl-impersonate-ff.so /usr/lib/x86_64-linux-gnu/libcurl.so.4
+sudo su
+LD_PRELOAD=/usr/local/lib/libcurl-impersonate-ff.so
+CURL_IMPERSONATE=firefox117
+patchelf --set-soname libcurl.so.4 `/usr/local/lib/libcurl-impersonate-ff.so
+ldconfig
 ```
 
-Make sure to restart your webserver and/or PHP daemon, otherwise it will keep using the old library. You should now be able to bypass Cloudflare's shitty checks!!
+From here, you will have a broken curl:
+```sh
+root@fuckedmachine:/# curl --version
+curl: /usr/local/lib/libcurl.so.4: no version information available (required by curl)
+curl: symbol lookup error: curl: undefined symbol: curl_global_trace, version CURL_OPENSSL_4
+```
+
+Which sucks balls, but you should be able to run this:
+```
+root@fuckedmachine:/# php -r 'print_r(curl_version());' | grep ssl_version
+    [ssl_version_number] => 0
+    [ssl_version] => NSS/3.92
+```
+
+It's very hacky, yes thank you for noticing. There's also the option of using the [forked project](https://github.com/lexiforest/curl-impersonate), but that garbage doesn't support NSS. I'm kind of against impersonating chrome cause you never know when Google is gonna add more fingerprinting bullshit.
 
 # Robots.txt
 Make sure you configure this right to optimize your search engine presence! Head over to `/robots.txt` and change the 4get.ca domain to your own domain.
