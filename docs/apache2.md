@@ -7,27 +7,35 @@ Then, install the following dependencies:
 ```sh
 apt update
 apt upgrade
-apt install php-mbstring apache2 certbot php-imagick imagemagick php-curl curl php-apcu git libapache2-mod-php
+apt install php-mbstring apache2 certbot php-imagick imagemagick php-curl curl php-apcu git libapache2-mod-fcgid php-fpm
 ```
 
 Enable the required modules:
 ```sh
+a2dismod mpm_prefork
+a2enmod mpm_event
 a2enmod ssl
 a2enmod rewrite
+a2enmod proxy_fcgi setenvif actions alias
+a2enmod http2
+a2enmod headers
+a2enmod proxy
 ```
 
-And enable these optional ones, which might be useful to you later on. The `proxy` module is useful for setting up reverse proxies to services like gitea, and `headers` is useful to tweak global header values:
+Tune the performance of php-fpm. You will need to edit this file according to your server specs and number of users. Edit the file at `/etc/php/8.4/pool.d/www.conf`:
 ```sh
-a2enmod proxy
-a2enmod headers
+pm = static
+pm.max_children = 50
 ```
+
+These values are what I currently use on 4get.ca, but for personal use, you can set `pm` to `ondemand` and `pm.max_children` to `20` (if you want those thumbnails to load fast!)
 
 Now, restart apache2:
 ```sh
 service apache2 restart
 ```
 
-Just for good measure, please check if your webserver is running. Access it through HTTP, not HTTPS. You should see the apache2 default landing page.
+Just for good measure, please check if your webserver is running. Access it through HTTP, not HTTPS. You should see the apache2 default landing page. Just a note, http2 won't work just yet since you don't have SSL yet.
 
 ## 000-default.conf
 Now, edit the following file: `/etc/apache2/sites-available/000-default.conf`, remove everything and carefully add each rule specified here, while making sure to replace my domains with your own:
@@ -73,13 +81,28 @@ Now, edit the following file: `/etc/apache2/sites-available/000-default.conf`, r
 	AddOutputFilterByType DEFLATE text/css
 
 	DocumentRoot /var/www/4get
-
+	
+	<FilesMatch \.php$>
+		SetHandler "proxy:unix:/run/php/php8.1-fpm.sock|fcgi://localhost/"
+	</FilesMatch>
+	
 	Options -MultiViews
 	RewriteEngine On
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteRule ^([^\.]+)$ $1.php [NC,L]
-
+	
+	<Directory /var/www/4get>
+		Options -MultiViews
+		AllowOverride All
+		Require all granted
+		
+		RewriteEngine On
+		RewriteCond %{REQUEST_FILENAME} !-d
+		RewriteCond %{REQUEST_FILENAME} !-f
+		RewriteRule ^([^\.]+)$ $1.php [NC,L]
+	</Directory>
+	
 	# deny access to private resources
 	<Directory /var/www/4get/data/>
 		Order Deny,allow
@@ -116,6 +139,7 @@ Make sure to replace `4get.ca` with your own domain under the `SSLCertificate*` 
 	ServerAdmin will@lolcat.ca
 	DocumentRoot /var/www/4get
 	
+	Protocols h2 http/1.1
 	SSLEngine On
 	SSLOptions +StdEnvVars
 	
@@ -127,6 +151,10 @@ Make sure to replace `4get.ca` with your own domain under the `SSLCertificate*` 
 	AddOutputFilterByType DEFLATE text/html
 	AddOutputFilterByType DEFLATE text/plain
 	AddOutputFilterByType DEFLATE text/css
+	
+	<FilesMatch \.php$>
+		SetHandler "proxy:unix:/run/php/php8.1-fpm.sock|fcgi://localhost/"
+	</FilesMatch>
 	
 	SSLCertificateFile /etc/letsencrypt/live/4get.ca/fullchain.pem
 	SSLCertificateKeyFile /etc/letsencrypt/live/4get.ca/privkey.pem

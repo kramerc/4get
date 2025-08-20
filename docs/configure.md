@@ -30,38 +30,26 @@ sudo make firefox-install
 sudo ldconfig
 ```
 
-Now, after compiling, you should have a `libcurl-impersonate-ff.so` sitting somewhere. Mine is located at `/usr/local/lib/libcurl-impersonate-ff.so`. Do some patch fuckery:
+Now, after compiling, you should have a `libcurl-impersonate-ff.so` sitting somewhere. Mine is located at `/usr/local/lib/libcurl-impersonate-ff.so`. Patch your PHP install so that it loads the right library:
 
 ```sh
-sudo su
-LD_PRELOAD=/usr/local/lib/libcurl-impersonate-ff.so
-CURL_IMPERSONATE=firefox117
-patchelf --set-soname libcurl.so.4 /usr/local/lib/libcurl-impersonate-ff.so
-ldconfig
+sudo systemctl edit php8.4-fpm.service
 ```
 
-From here, you will have a broken curl:
+^This will open a text editor. Add the following shit in there, in between those 2 comments I pasted for ya just for reference:
+
 ```sh
-root@fuckedmachine:/# curl --version
-curl: /usr/local/lib/libcurl.so.4: no version information available (required by curl)
-curl: symbol lookup error: curl: undefined symbol: curl_global_trace, version CURL_OPENSSL_4
+### Editing /etc/systemd/system/php8.4-fpm.service.d/override.conf
+### Anything between here and the comment below will become the contents of the>
+
+[Service]
+Environment="LD_PRELOAD=/usr/local/lib/libcurl-impersonate-ff.so"
+Environment="CURL_IMPERSONATE=firefox117"
+
+### Edits below this comment will be discarded
 ```
 
-Or not... During testing, I've seen that sometimes curl still works for some reason. What really matters is the output of this command:
-```
-root@fuckedmachine:/# php -r 'print_r(curl_version());' | grep ssl_version
-    [ssl_version_number] => 0
-    [ssl_version] => NSS/3.92
-```
-
-It **MUST** say NSS, otherwise it didn't work. There's also the option of using the [forked project](https://github.com/lexiforest/curl-impersonate), but that garbage doesn't support NSS. I'm kind of against impersonating chrome cause you never know when Google is gonna add more fingerprinting bullshit.
-
-Appendix: If you want a functioning `curl` command line utility again in case it doesn't work anymore, you can do the following hack:
-
-```
-sudo apt remove curl
-sudo ln -s /usr/local/bin/curl-impersonate-ff /usr/bin/curl
-```
+Restart php8.4-fpm. (`sudo service php8.4-fpm restart`). To test things out, try making a search on "Yep", they check for SSL. If you get results (or a timeout, this piece of shit engine is slow as fuck) that means it works!
 
 # Robots.txt
 Make sure you configure this right to optimize your search engine presence! Head over to `/robots.txt` and change the 4get.ca domain to your own domain.
