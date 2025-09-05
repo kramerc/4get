@@ -551,6 +551,33 @@ class fuckhtml{
 			
 			switch($json[$i]){
 				
+				case "\"":
+				case "'":
+					if(
+						$i > 2 ||
+						(
+							(
+								$json[$i - 1] === "\\" &&
+								$json[$i - 2] === "\\"
+							) ||
+							$json[$i - 1] !== "\\"
+						)
+					){
+						// found a non-escaped quote
+						
+						if($in_quote === null){
+							
+							// open quote
+							$in_quote = $json[$i];
+							
+						}elseif($in_quote === $json[$i]){
+							
+							// close quote
+							$in_quote = null;
+						}
+					}
+					break;
+				
 				case "[":
 					if($in_quote === null){
 						
@@ -586,37 +613,20 @@ class fuckhtml{
 						$object_level--;
 					}
 					break;
-				
-				case "\"":
-				case "'":
-					if(
-						$i !== 0 &&
-						$json[$i - 1] !== "\\"
-					){
-						// found a non-escaped quote
-						
-						if($in_quote === null){
-							
-							// open quote
-							$in_quote = $json[$i];
-						}elseif($in_quote === $json[$i]){
-							
-							// close quote
-							$in_quote = null;
-						}
-					}
-					break;
 			}
 			
 			if(
-				$start !== null &&
 				$array_level === 0 &&
-				$object_level === 0
+				$object_level === 0 &&
+				$start !== null
 			){
 				
 				return substr($json, $start, $i - $start + 1);
 				break;
 			}
 		}
+		
+		// fallback
+		return "[]";
 	}
 }
