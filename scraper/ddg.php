@@ -528,7 +528,10 @@ class ddg{
 				if(
 					!isset($item["s"]) &&
 					isset($item["t"]) &&
-					$item["t"] == "DEEP_ERROR_NO_RESULTS"
+					(
+						$item["t"] == "DEEP_ERROR_NO_RESULTS" ||
+						$item["t"] == "DEEP_SIMPLE_NO_RESULTS"
+					)
 				){
 					
 					return $out;
