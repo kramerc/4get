@@ -554,11 +554,14 @@ class fuckhtml{
 				case "\"":
 				case "'":
 					if(
-						$i > 2 && // only check if a quote could be there
+						$i > 1 && // only check if a quote could be there
 						(
 							(
 								$json[$i - 1] === "\\" &&
-								$json[$i - 2] === "\\"
+								(
+									$i === 2 ||
+									$json[$i - 2] === "\\"
+								)
 							) ||
 							$json[$i - 1] !== "\\"
 						)
