@@ -126,6 +126,10 @@ $settings = [
 						"text" => "Brave"
 					],
 					[
+						"value" => "mullvad_brave",
+						"text" => "Mullvad (Brave)"
+					],
+					[
 						"value" => "yandex",
 						"text" => "Yandex"
 					],
@@ -136,6 +140,10 @@ $settings = [
 					[
 						"value" => "google_cse",
 						"text" => "Google CSE"
+					],
+					[
+						"value" => "mullvad_google",
+						"text" => "Mullvad (Google)"
 					],
 					[
 						"value" => "startpage",
@@ -176,6 +184,10 @@ $settings = [
 					[
 						"value" => "coccoc",
 						"text" => "Cốc Cốc"
+					],
+					[
+						"value" => "solofield",
+						"text" => "Solofield"
 					],
 					[
 						"value" => "marginalia",
@@ -230,6 +242,10 @@ $settings = [
 					[
 						"value" => "baidu",
 						"text" => "Baidu"
+					],
+					[
+						"value" => "solofield",
+						"text" => "Solofield"
 					],
 					[
 						"value" => "pinterest",
@@ -308,6 +324,10 @@ $settings = [
 					[
 						"value" => "coccoc",
 						"text" => "Cốc Cốc"
+					],
+					[
+						"value" => "solofield",
+						"text" => "Solofield"
 					]
 				]
 			],

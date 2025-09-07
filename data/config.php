@@ -43,7 +43,7 @@ class config{
 	
 	// If this regex expression matches on the user agent, it blocks the request
 	// Not useful at all against a targetted attack
-	const HEADER_REGEX = '/bot|wget|curl|python-requests|scrapy|go-http-client|ruby|yahoo|spider|qwant/i';
+	const HEADER_REGEX = '/bot|wget|curl|python-requests|scrapy|go-http-client|ruby|yahoo|spider|qwant|meta/i';
 	
 	// Block clients who present any of the following headers in their request (SPECIFY IN !!lowercase!!)
 	// Eg: ["x-forwarded-for", "x-via", "forwarded-for", "via"];
@@ -118,7 +118,7 @@ class config{
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0";
 	
 	// Proxy pool assignments for each scraper
 	// false = Use server's raw IP
@@ -130,6 +130,8 @@ class config{
 	const PROXY_GOOGLE = false;
 	const PROXY_GOOGLE_API = false;
 	const PROXY_GOOGLE_CSE = false;
+	const PROXY_MULLVAD_GOOGLE = false;
+	const PROXY_MULLVAD_BRAVE = false;
 	const PROXY_STARTPAGE = false;
 	const PROXY_QWANT = false;
 	const PROXY_BAIDU = false;
@@ -143,6 +145,7 @@ class config{
 	const PROXY_WIBY = false;
 	const PROXY_CURLIE = false;
 	const PROXY_YT = false; // youtube
+	const PROXY_ARCHIVEORG = false;
 	const PROXY_SEPIASEARCH = false;
 	const PROXY_ODYSEE = false;
 	const PROXY_VIMEO = false;
