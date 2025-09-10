@@ -352,7 +352,6 @@ class brave{
 		$html = fread($handle, filesize("scraper/brave.html"));
 		fclose($handle);*/
 		
-		
 		try{
 			$html =
 				$this->get(
@@ -1290,13 +1289,13 @@ class brave{
 				"source" => [
 					[
 						"url" => $result["properties"]["url"],
-						"width" => null,
-						"height" => null
+						"width" => (int)$result["properties"]["width"],
+						"height" => (int)$result["properties"]["height"]
 					],
 					[
 						"url" => $result["thumbnail"]["src"],
-						"width" => null,
-						"height" => null
+						"width" => (int)$result["thumbnail"]["width"],
+						"height" => (int)$result["thumbnail"]["height"]
 					]
 				],
 				"url" => $result["url"]
