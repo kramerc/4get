@@ -370,7 +370,10 @@ class ddg{
 		}else{
 			
 			// we have $get["s"]
-			if(strpos($get["s"], "\"") !== false){
+			if(
+				strpos($get["s"], "\"") !== false || // contains quotes
+				strpos($get["s"], ":") !== false // contains potential site: operator or whatever the fuck
+			){
 				
 				return $this->web_html($get);
 			}
