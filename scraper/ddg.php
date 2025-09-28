@@ -355,6 +355,33 @@ class ddg{
 	
 	public function web($get){
 		
+		if($get["npt"]){
+			
+			[$raw_data, $proxy] = $this->backend->get($get["npt"], "web");
+			
+			$raw_data = explode(",", $raw_data, 2);
+			
+			if($raw_data[0] == "0"){
+				
+				return $this->web_html($get, [$raw_data[1], $proxy]);
+			}
+			
+			return $this->web_full($get, [$raw_data[1], $proxy]);
+		}else{
+			
+			// we have $get["s"]
+			if(strpos($get["s"], "\"") !== false){
+				
+				return $this->web_html($get);
+			}
+			
+			// no quotes sent, do full web search
+			return $this->web_full($get);
+		}
+	}
+	
+	public function web_html($get, $npt = null){
+		
 		$out = [
 			"status" => "ok",
 			"spelling" => [
@@ -371,9 +398,368 @@ class ddg{
 			"related" => []
 		];
 		
-		if($get["npt"]){
+		if($npt !== null){
 			
-			[$js_link, $proxy] = $this->backend->get($get["npt"], "web");
+			[$get_filters, $proxy] = $npt;
+			
+			$get_filters = json_decode($get_filters, true);
+		}else{
+			
+			if(strlen($get["s"]) === 0){
+				
+				throw new Exception("Search term is empty!");
+			}
+			
+			$proxy = $this->backend->get_ip();
+			
+			// generate filters
+			$get_filters = [
+				"q" => $get["s"]
+			];
+			
+			if($get["country"] == "any"){
+				
+				$get_filters["kl"] = "wt-wt";
+			}else{
+				
+				$get_filters["kl"] = $get["country"];
+			}
+			
+			switch($get["nsfw"]){
+				
+				case "yes": $get_filters["kp"] = "-2"; break;
+				case "maybe": $get_filters["kp"] = "-1"; break;
+				case "no": $get_filters["kp"] = "1"; break;
+			}
+			
+			$df = true;
+			
+			if($get["newer"] === false){
+				
+				if($get["older"] !== false){
+					
+					$start = 36000;
+					$end = $get["older"];
+				}else{
+					
+					$df = false;
+				}
+			}else{
+				
+				$start = $get["newer"];
+				
+				if($get["older"] !== false){
+					
+					$end = $get["older"];
+				}else{
+					
+					$end = time();
+				}
+			}
+			
+			if($df === true){
+				$get_filters["df"] = date("Y-m-d", $start) . ".." . date("Y-m-d", $end);
+			}
+		}
+		
+		//
+		// Get HTML
+		//
+		try{
+			$html = $this->get(
+				$proxy,
+				"https://html.duckduckgo.com/html/",
+				$get_filters
+			);
+		}catch(Exception $e){
+			
+			throw new Exception("Failed to fetch search page");
+		}
+		
+		//$html = file_get_contents("scraper/ddg.html");
+		
+		$this->fuckhtml->load($html);
+		
+		//
+		// Get next page token
+		//
+		$forms =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"form"
+			);
+		
+		foreach(array_reverse($forms) as $form){
+			
+			$this->fuckhtml->load($form);
+			
+			$input_probe =
+				$this->fuckhtml
+				->getElementsByClassName(
+					"btn--alt",
+					"input"
+				);
+			
+			if(count($input_probe) !== 0){
+				
+				// found next page!
+				$inputs =
+					$this->fuckhtml
+					->getElementsByAttributeValue(
+						"type",
+						"hidden",
+						"input"
+					);
+				
+				$query = [];
+				
+				foreach($inputs as $q){
+					
+					$query[
+						$this->fuckhtml
+						->getTextContent(
+							$q["attributes"]["name"]
+						)
+					] =
+						$this->fuckhtml
+						->getTextContent(
+							$q["attributes"]["value"]
+						);
+				}
+				
+				$out["npt"] =
+					$this->backend->store(
+						"0," . json_encode($query),
+						"web",
+						$proxy
+					);
+				break;
+			}
+		}
+		
+		// reset
+		$this->fuckhtml->load($html);
+		
+		//
+		// parse wikipedia answer
+		//
+		$wiki_wrapper =
+			$this->fuckhtml
+			->getElementsByClassName(
+				"zci-wrapper",
+				"div"
+			);
+		
+		if(count($wiki_wrapper) !== 0){
+			
+			$this->fuckhtml->load($wiki_wrapper[0]);
+			
+			$a =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"a"
+				);
+			
+			if(count($a) !== 0){
+				
+				$link =
+					$this->unshiturl(
+						$this->fuckhtml
+						->getTextContent(
+							$a[0]["attributes"]["href"]
+						)
+					);
+			}else{
+				
+				$link = null;
+			}
+			
+			$title =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"h1"
+				);
+			
+			if(count($title) !== 0){
+				
+				$title =
+					$this->fuckhtml
+					->getTextContent(
+						$title[0]
+					);
+			}else{
+				
+				$title = null;
+			}
+			
+			$description =
+				$this->fuckhtml
+				->getElementById(
+					"zero_click_abstract",
+					"div"
+				);
+			
+			if($description !== false){
+				
+				$this->fuckhtml->load($description);
+				
+				$thumb =
+					$this->fuckhtml
+					->getElementsByTagName(
+						"img"
+					);
+				
+				if(count($thumb) !== 0){
+					
+					$thumb =
+						$this->fuckhtml
+						->getTextContent(
+							$thumb[0]["attributes"]["src"]
+						);
+				}else{
+					
+					$thumb = null;
+				}
+				
+				$as =
+					$this->fuckhtml
+					->getElementsByTagName(
+						"a"
+					);
+				
+				foreach($as as $a){
+					
+					$description["innerHTML"] =
+						str_replace(
+							$a["outerHTML"],
+							"",
+							$description["innerHTML"]
+						);
+				}
+				
+				$description =
+					$this->fuckhtml
+					->getTextContent(
+						$description
+					);
+				
+				$out["answer"][] = [
+					"title" => $title,
+					"description" => [
+						[
+							"type" => "text",
+							"value" => $description
+						]
+					],
+					"url" => $link,
+					"thumb" => $thumb,
+					"table" => [],
+					"sublink" => []
+				];
+			}
+			
+			// reset
+			$this->fuckhtml->load($html);
+		}
+		
+		//
+		// Get results
+		//
+		$results =
+			$this->fuckhtml
+			->getElementsByClassName(
+				"result",
+				"div"
+			);
+		
+		foreach($results as $result){
+			
+			$this->fuckhtml->load($result);
+			
+			$title =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"h2"
+				);
+			
+			if(count($title) === 0){
+				
+				// should not happen
+				continue;
+			}
+			
+			$title =
+				$this->fuckhtml
+				->getTextContent(
+					$title[0]
+				);
+			
+			$description_obj =
+				$this->fuckhtml
+				->getElementsByClassName(
+					"result__snippet",
+					"a"
+				);
+			
+			if(count($description_obj) === 0){
+				
+				$description = null;
+			}else{
+				
+				$description =
+					$this->titledots(
+						$this->fuckhtml
+						->getTextContent(
+							$description_obj[0]
+						)
+					);
+			}
+			
+			$url =
+				$this->fuckhtml
+				->getTextContent(
+					$description_obj[0]["attributes"]["href"]
+				);
+			
+			$out["web"][] = [
+				"title" => $this->titledots($title),
+				"description" => $description,
+				"url" => $this->unshiturl($url),
+				"date" => null,
+				"type" => "web",
+				"thumb" => [
+					"ratio" => null,
+					"url" => null
+				],
+				"sublink" => [],
+				"table" => []
+			];
+		}
+		
+		return $out;
+	}
+	
+	public function web_full($get, $npt = null){
+		
+		$out = [
+			"status" => "ok",
+			"spelling" => [
+				"type" => "no_correction",
+				"using" => null,
+				"correction" => null
+			],
+			"npt" => null,
+			"answer" => [],
+			"web" => [],
+			"image" => [],
+			"video" => [],
+			"news" => [],
+			"related" => []
+		];
+		
+		if($npt !== null){
+			
+			[$js_link, $proxy] = $npt;
 			$js_link = "https://links.duckduckgo.com" . $js_link;
 			
 			$html = "";
@@ -812,7 +1198,7 @@ class ddg{
 				// get NPT
 				$out["npt"] =
 					$this->backend->store(
-						$item["n"],
+						"1," . $item["n"],
 						"web",
 						$proxy
 					);
@@ -2263,9 +2649,23 @@ class ddg{
 	
 	private function unshiturl($url){
 		
-		// check for domains w/out first short subdomain (ex: www.)
-		
+		// remove tracking redirect
+		// yes, the privacy search engine has click-out tracking. great!
 		$domain = parse_url($url, PHP_URL_HOST);
+		
+		if($domain == "duckduckgo.com"){
+			
+			$query = parse_url($url, PHP_URL_QUERY);
+			parse_str($query, $query);
+			
+			if(isset($query["uddg"])){
+				
+				$url = $query["uddg"];
+				$domain = parse_url($url, PHP_URL_HOST);
+			}
+		}
+		
+		// check for domains w/out first short subdomain (ex: www.)
 		
 		$subdomain = preg_replace(
 			'/^[A-z0-9]{1,3}\./',
