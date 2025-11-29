@@ -937,7 +937,7 @@ class frontend{
 					"display" => "Scraper",
 					"option" => [
 						"ddg" => "DuckDuckGo",
-						"yahoo" => "Yahoo!",
+						//"yahoo" => "Yahoo!",
 						"brave" => "Brave",
 						"yandex" => "Yandex",
 						"google" => "Google",
