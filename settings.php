@@ -142,6 +142,10 @@ $settings = [
 						"text" => "Google CSE"
 					],
 					[
+						"value" => "yahoo_japan",
+						"text" => "Yahoo! JAPAN",
+					],
+					[
 						"value" => "startpage",
 						"text" => "Startpage"
 					],
@@ -222,6 +226,10 @@ $settings = [
 					[
 						"value" => "google_cse",
 						"text" => "Google CSE"
+					],
+					[
+						"value" => "yahoo_japan",
+						"text" => "Yahoo! JAPAN",
 					],
 					[
 						"value" => "startpage",
@@ -306,6 +314,10 @@ $settings = [
 						"text" => "Google"
 					],
 					[
+						"value" => "yahoo_japan",
+						"text" => "Yahoo! JAPAN",
+					],
+					[
 						"value" => "startpage",
 						"text" => "Startpage"
 					],
@@ -342,6 +354,10 @@ $settings = [
 					[
 						"value" => "google",
 						"text" => "Google"
+					],
+					[
+						"value" => "yahoo_japan",
+						"text" => "Yahoo! JAPAN",
 					],
 					[
 						"value" => "startpage",
