@@ -257,7 +257,7 @@ class sc{
 			}
 			
 			// token might've expired, get a new one and re-try search
-			$this->get_token($proxy);
+			$token = $this->get_token($proxy, true);
 			return $this->music($get, true);
 		}
 		
@@ -422,11 +422,14 @@ class sc{
 		return $out;
 	}
 	
-	public function get_token($proxy){
+	public function get_token($proxy, $force_refresh = false){
 		
 		$token = apcu_fetch("sc_token");
 		
-		if($token !== false){
+		if(
+			$token !== false &&
+			$force_refresh === false
+		){
 			
 			return $token;
 		}
